@@ -74,17 +74,3 @@ House Price Prediction - Linear Regression
 ```bash
 python src/test_saved_model.py
 ```
-
-## Presentation Script
-
-My responsibility was model training and MLflow tracking.
-
-First, I loaded the housing price dataset using pandas. Then I separated the data into input features and target price.
-
-I cleaned the data by handling missing values. For numerical columns, I used the median value. For categorical columns, I used the most frequent value and converted text values using OneHotEncoder.
-
-After that, I split the dataset into 80% training data and 20% testing data. Then I trained a Linear Regression model.
-
-To evaluate the model, I used MAE, RMSE, and R2 score. MAE and RMSE measure prediction error, while R2 shows how well the model explains the house price.
-
-Finally, I used MLflow to track the experiment. I logged the parameters, metrics, and trained model. I also saved the model as house_price_model.pkl so the Flask API can use it for prediction.
