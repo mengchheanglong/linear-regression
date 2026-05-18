@@ -74,3 +74,11 @@ House Price Prediction - Linear Regression
 ```bash
 python src/test_saved_model.py
 ```
+## Backend API Documentation (Flask) — Developed by Member 2
+
+The backend is a Flask-powered microservice built to load our trained Linear Regression model binary and expose a highly responsive predictive web endpoint.
+
+### Local Initialization
+To start the API development server locally:
+```bash
+python src/app.py
