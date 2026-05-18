@@ -1,4 +1,4 @@
-artifact_path: file:C:/Users/User/Downloads/linear-regression/mlruns/1/models/m-0fed753c322348bc9cbb38bea0f0c828/artifacts
+artifact_path: file:C:/Users/User/Downloads/linear-regression/mlruns/1/models/m-ad4f63cfbac440d8b0eabeee9601c342/artifacts
 flavors:
   python_function:
     env:
@@ -15,9 +15,9 @@ flavors:
     sklearn_version: 1.8.0
     skops_trusted_types: null
 mlflow_version: 3.12.0
-model_id: m-0fed753c322348bc9cbb38bea0f0c828
+model_id: m-ad4f63cfbac440d8b0eabeee9601c342
 model_size_bytes: 3108
-model_uuid: m-0fed753c322348bc9cbb38bea0f0c828
+model_uuid: m-ad4f63cfbac440d8b0eabeee9601c342
 prompts: null
-run_id: e60ea4f84e574b25bce0292880f3c13d
-utc_time_created: '2026-05-18 03:47:15.829805'
+run_id: 09da8268b36047a6a0d6c6811c31ae52
+utc_time_created: '2026-05-18 11:54:45.143583'
