@@ -9,7 +9,7 @@ from sklearn.compose import ColumnTransformer, TransformedTargetRegressor
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold, cross_validate, train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, PolynomialFeatures
 
@@ -20,6 +20,7 @@ TARGET_COLUMN = "price"
 TEST_SIZE = 0.2
 RANDOM_STATE = 42
 EXPERIMENT_NAME = "House Price Prediction - Linear Regression"
+CV_FOLDS = 5
 
 
 def build_model(numeric_features, categorical_features, numeric_strategy):
@@ -102,6 +103,20 @@ def build_candidates(numeric_features, categorical_features):
 
 def evaluate_candidate(candidate, X_train, X_test, y_train, y_test):
     model = candidate["model"]
+    cv = KFold(n_splits=CV_FOLDS, shuffle=True, random_state=RANDOM_STATE)
+    cv_scores = cross_validate(
+        model,
+        X_train,
+        y_train,
+        cv=cv,
+        scoring={
+            "mae": "neg_mean_absolute_error",
+            "rmse": "neg_root_mean_squared_error",
+            "r2": "r2",
+        },
+        n_jobs=None,
+    )
+
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
 
@@ -113,6 +128,9 @@ def evaluate_candidate(candidate, X_train, X_test, y_train, y_test):
         "mae": mae,
         "rmse": rmse,
         "r2": r2,
+        "cv_mae": float(-cv_scores["test_mae"].mean()),
+        "cv_rmse": float(-cv_scores["test_rmse"].mean()),
+        "cv_r2": float(cv_scores["test_r2"].mean()),
     }
 
 
@@ -167,10 +185,14 @@ def main():
             mlflow.log_param("test_size", TEST_SIZE)
             mlflow.log_param("random_state", RANDOM_STATE)
             mlflow.log_param("target_column", TARGET_COLUMN)
+            mlflow.log_param("cv_folds", CV_FOLDS)
 
             mlflow.log_metric("MAE", metrics["mae"])
             mlflow.log_metric("RMSE", metrics["rmse"])
             mlflow.log_metric("R2", metrics["r2"])
+            mlflow.log_metric("CV_MAE", metrics["cv_mae"])
+            mlflow.log_metric("CV_RMSE", metrics["cv_rmse"])
+            mlflow.log_metric("CV_R2", metrics["cv_r2"])
 
             mlflow.sklearn.log_model(candidate["model"], candidate["name"])
 
@@ -178,7 +200,10 @@ def main():
                 f"{candidate['name']}: "
                 f"MAE={metrics['mae']:.2f}, "
                 f"RMSE={metrics['rmse']:.2f}, "
-                f"R2={metrics['r2']:.4f}"
+                f"R2={metrics['r2']:.4f}, "
+                f"CV_MAE={metrics['cv_mae']:.2f}, "
+                f"CV_RMSE={metrics['cv_rmse']:.2f}, "
+                f"CV_R2={metrics['cv_r2']:.4f}"
             )
 
             current_result = {
@@ -186,7 +211,7 @@ def main():
                 "metrics": metrics,
             }
 
-            if best_result is None or metrics["rmse"] < best_result["metrics"]["rmse"]:
+            if best_result is None or metrics["cv_rmse"] < best_result["metrics"]["cv_rmse"]:
                 best_result = current_result
 
     best_candidate = best_result["candidate"]
@@ -198,6 +223,9 @@ def main():
     print("MAE:", best_metrics["mae"])
     print("RMSE:", best_metrics["rmse"])
     print("R2 Score:", best_metrics["r2"])
+    print("CV MAE:", best_metrics["cv_mae"])
+    print("CV RMSE:", best_metrics["cv_rmse"])
+    print("CV R2 Score:", best_metrics["cv_r2"])
 
     best_model.fit(X, y)
     os.makedirs("models", exist_ok=True)

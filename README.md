@@ -2,6 +2,20 @@
 
 A full-stack machine learning application that predicts house prices using a Linear Regression model, served through a Flask REST API, and presented through a Streamlit web interface.
 
+## Project Explanation
+
+This project predicts house prices using a Linear Regression model trained on the Housing Prices dataset.
+The trained model is exposed through a Flask API and connected to a Streamlit user interface so users can enter house details and receive a predicted price.
+MLflow is used to track experiments, evaluation metrics, and saved model artifacts.
+
+## GitHub Collaboration
+
+This project is managed and shared using GitHub for version control and team collaboration.
+Each team member contributed their assigned part of the system through commits to the repository.
+
+Repository link:
+`https://github.com/mengchheanglong/linear-regression`
+
 ## Team Member Responsibilities
 
 | Member | Role | Deliverables |
@@ -127,17 +141,27 @@ Response:
 
 - Algorithm: Linear Regression
 - Experiment strategy: compare baseline Linear Regression, interaction features, log-transformed target, and degree-2 polynomial numeric features
-- Selected final pipeline: Linear Regression with pairwise interaction features on numeric columns
-- Preprocessing: median imputation plus pairwise interaction features for numerics, most-frequent imputation plus one-hot encoding for categoricals
+- Model selection rule: choose the candidate with the best 5-fold cross-validation RMSE
+- Selected final pipeline: baseline Linear Regression with median imputation for numerics and one-hot encoding for categoricals
+- Preprocessing: median imputation for numerics, most-frequent imputation plus one-hot encoding for categoricals
 - Train/test split: 80/20 with `random_state=42`
+- Cross-validation: 5-fold cross-validation on the training split
 
 ### Metrics
 
 | Metric | Value |
 |--------|-------|
-| MAE    | 960,206 |
-| RMSE   | 1,300,236 |
-| R2     | 0.666 |
+| MAE    | 970,043 |
+| RMSE   | 1,324,507 |
+| R2     | 0.653 |
+
+### Cross-Validation Metrics
+
+| Metric | Value |
+|--------|-------|
+| CV MAE  | 747,209 |
+| CV RMSE | 1,023,579 |
+| CV R2   | 0.649 |
 
 ### View MLflow Experiments
 

@@ -1,0 +1,23 @@
+artifact_path: file:C:/Users/User/Downloads/linear-regression/mlruns/1/models/m-18176891c41c47168f6944a9df73ea26/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.14.3
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.8.0
+    skops_trusted_types: null
+mlflow_version: 3.12.0
+model_id: m-18176891c41c47168f6944a9df73ea26
+model_size_bytes: 3108
+model_uuid: m-18176891c41c47168f6944a9df73ea26
+prompts: null
+run_id: 820dd7a468414cc6a18652a97e92c78e
+utc_time_created: '2026-05-19 05:19:03.102738'
