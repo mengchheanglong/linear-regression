@@ -1,5 +1,5 @@
 import os
-import pickle
+import joblib
 import pandas as pd
 from flask import Flask, request, jsonify
 
@@ -12,8 +12,7 @@ MODEL_PATH = os.path.join("models", "house_price_model.pkl")
 model = None
 if os.path.exists(MODEL_PATH):
     try:
-        with open(MODEL_PATH, "rb") as f:
-            model = pickle.load(f)
+        model = joblib.load(MODEL_PATH)
         print("--- Model loaded successfully from models/house_price_model.pkl ---")
     except Exception as e:
         print(f"Error loading model: {str(e)}")
