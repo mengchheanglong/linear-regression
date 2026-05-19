@@ -1,37 +1,32 @@
 # House Price Prediction
 
-A full-stack machine learning application that predicts house prices using a Linear Regression model, served through a Flask REST API, and presented via a Streamlit web interface.
-
----
+A full-stack machine learning application that predicts house prices using a Linear Regression model, served through a Flask REST API, and presented through a Streamlit web interface.
 
 ## Team Member Responsibilities
 
 | Member | Role | Deliverables |
 |--------|------|--------------|
 | Member 1 | ML Model | `src/train_model.py`, `data/Housing.csv`, `models/house_price_model.pkl`, MLflow tracking |
-| Member 2 | Flask API | `src/app.py` — `/` health check, `POST /predict` endpoint |
-| Member 3 | Streamlit UI + Deployment | `streamlit_app.py`, `requirements.txt`, README, Render deployment notes |
-
----
+| Member 2 | Flask API | `src/app.py`, `/` health check, `POST /predict` endpoint |
+| Member 3 | Streamlit UI + Deployment | `streamlit_app.py`, `requirements.txt`, `render.yaml`, README, Render deployment notes |
 
 ## Project Structure
 
 ```text
 data/
-  Housing.csv              # Raw housing dataset
+  Housing.csv
 models/
-  house_price_model.pkl    # Trained model binary
-mlruns/                    # MLflow experiment artifacts
+  house_price_model.pkl
+mlruns/
 src/
-  train_model.py           # Model training script (Member 1)
-  test_saved_model.py      # Model sanity-check script
-  app.py                   # Flask REST API (Member 2)
-streamlit_app.py           # Streamlit frontend (Member 3)
+  app.py
+  test_saved_model.py
+  train_model.py
+streamlit_app.py
+render.yaml
 requirements.txt
 README.md
 ```
-
----
 
 ## Setup
 
@@ -41,15 +36,13 @@ Install all dependencies:
 pip install -r requirements.txt
 ```
 
----
-
 ## Full Run Instructions
 
-Follow these steps **in order** to run the complete application.
+Run the complete application in this order.
 
-### Step 1 — Train the Model (Member 1)
+### Step 1 - Train the Model
 
-> Skip if `models/house_price_model.pkl` already exists.
+Skip this step if `models/house_price_model.pkl` already exists.
 
 ```bash
 python src/train_model.py
@@ -57,9 +50,9 @@ python src/train_model.py
 
 This trains the Linear Regression model on `data/Housing.csv`, logs the experiment to MLflow, and saves the model to `models/house_price_model.pkl`.
 
-### Step 2 — Start the Flask API (Member 2)
+### Step 2 - Start the Flask API
 
-Open a **new terminal** and run:
+Open a new terminal and run:
 
 ```bash
 python src/app.py
@@ -79,9 +72,9 @@ Expected response:
 {"status": "healthy", "message": "House Price Prediction API is running.", "model_loaded": true}
 ```
 
-### Step 3 — Start the Streamlit App (Member 3)
+### Step 3 - Start the Streamlit App
 
-Open another **new terminal** and run:
+Open another new terminal and run:
 
 ```bash
 streamlit run streamlit_app.py
@@ -89,17 +82,14 @@ streamlit run streamlit_app.py
 
 Streamlit opens automatically in your browser at `http://localhost:8501`.
 
-Fill in the house details and click **Predict Price**.
-
----
-
 ## API Reference
 
 ### `GET /`
 
 Health check.
 
-**Response:**
+Response:
+
 ```json
 {"status": "healthy", "message": "House Price Prediction API is running.", "model_loaded": true}
 ```
@@ -108,7 +98,8 @@ Health check.
 
 Predict house price from features.
 
-**Request body (JSON):**
+Request body:
+
 ```json
 {
   "area": 7420,
@@ -126,18 +117,17 @@ Predict house price from features.
 }
 ```
 
-**Response:**
-```json
-{"predicted_price": 13142500.00}
-```
+Response:
 
----
+```json
+{"predicted_price": 13142500.0}
+```
 
 ## Model Training Details
 
-- **Algorithm:** Linear Regression (scikit-learn Pipeline with preprocessing)
-- **Preprocessing:** Median imputation for numerics, mode imputation + OneHotEncoding for categoricals
-- **Train/Test Split:** 80% / 20% (random_state=42)
+- Algorithm: Linear Regression
+- Preprocessing: median imputation for numerics, most-frequent imputation plus one-hot encoding for categoricals
+- Train/test split: 80/20 with `random_state=42`
 
 ### Metrics
 
@@ -145,17 +135,15 @@ Predict house price from features.
 |--------|-------|
 | MAE    | 970,043 |
 | RMSE   | 1,324,507 |
-| R²     | 0.653 |
+| R2     | 0.653 |
 
 ### View MLflow Experiments
 
 ```bash
-python -m mlflow ui
+python -m mlflow ui --port 5001
 ```
 
-Open `http://127.0.0.1:5000` (start the MLflow UI *before* the Flask API to avoid port conflict, or use `--port 5001`).
-
----
+Open `http://127.0.0.1:5001`.
 
 ## Test Saved Model
 
@@ -163,46 +151,30 @@ Open `http://127.0.0.1:5000` (start the MLflow UI *before* the Flask API to avoi
 python src/test_saved_model.py
 ```
 
----
+## Render Deployment
 
-## Deployment on Render
+This repo includes `render.yaml` for two web services:
 
-### Architecture on Render
+- `linear-regression-api`
+- `linear-regression-streamlit`
 
-Deploy the **Flask API** as a Web Service and the **Streamlit app** as a separate Web Service.
+### Flask Service
 
-### Flask API — Render Web Service
+- Build command: `pip install -r requirements.txt`
+- Start command: `python src/app.py`
 
-1. Push the repository to GitHub.
-2. In Render, create a new **Web Service** and connect your repository.
-3. Set the following:
+### Streamlit Service
 
-   | Field | Value |
-   |-------|-------|
-   | **Build Command** | `pip install -r requirements.txt` |
-   | **Start Command** | `python src/app.py` |
-   | **Environment** | Python 3 |
+- Build command: `pip install -r requirements.txt`
+- Start command: `streamlit run streamlit_app.py --server.port $PORT --server.address 0.0.0.0`
 
-4. Add any required environment variables (none needed by default).
-5. After deploy, Render provides a public URL like `https://your-api.onrender.com`.
+### Required Environment Variables
 
-### Streamlit App — Render Web Service
+- `API_URL` for the Streamlit service
+  Example: `https://your-api-service.onrender.com/predict`
 
-1. Create a second **Web Service** in Render from the same repository.
-2. Set the following:
+### Notes
 
-   | Field | Value |
-   |-------|-------|
-   | **Build Command** | `pip install -r requirements.txt` |
-   | **Start Command** | `streamlit run streamlit_app.py --server.port $PORT --server.address 0.0.0.0` |
-   | **Environment** | Python 3 |
-
-3. Add an environment variable `API_URL` pointing to your deployed Flask API URL if you parameterize it (optional — see note below).
-
-> **Note:** For production, replace the hardcoded `API_URL = "http://localhost:5000/predict"` in `streamlit_app.py` with `os.environ.get("API_URL", "http://localhost:5000/predict")` so the Streamlit app can point to the deployed Flask service.
-
-### Important Notes for Render
-
-- The free tier spins down after inactivity — the first request may be slow (cold start).
-- Ensure `models/house_price_model.pkl` is committed to the repository so Render can access it at runtime.
-- The Flask app binds to `0.0.0.0` and uses port `5000` by default — Render overrides the port via `$PORT` if needed. Update `app.run(port=int(os.environ.get("PORT", 5000)))` for full Render compatibility.
+- The Flask app reads the port from `$PORT`, which is required by Render.
+- The Streamlit app reads `API_URL` from the environment, so it can call the deployed Flask API.
+- Ensure `models/house_price_model.pkl` is committed so Render can load it at runtime.

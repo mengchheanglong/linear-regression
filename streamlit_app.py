@@ -1,11 +1,14 @@
+import os
+
 import requests
 import streamlit as st
 
-API_URL = "http://localhost:5000/predict"
 
-st.set_page_config(page_title="House Price Predictor", page_icon="🏠", layout="centered")
+API_URL = os.environ.get("API_URL", "http://localhost:5000/predict")
 
-st.title("🏠 House Price Predictor")
+st.set_page_config(page_title="House Price Predictor", page_icon="house", layout="centered")
+
+st.title("House Price Predictor")
 st.markdown("Enter the house details below and click **Predict Price** to get an estimate.")
 
 st.header("Property Details")
@@ -55,7 +58,7 @@ if st.button("Predict Price", type="primary", use_container_width=True):
         if response.status_code == 200:
             result = response.json()
             predicted = result.get("predicted_price", "N/A")
-            st.success("Prediction complete!")
+            st.success("Prediction complete.")
             st.metric(
                 label="Estimated House Price",
                 value=f"${predicted:,.2f}" if isinstance(predicted, (int, float)) else predicted,
