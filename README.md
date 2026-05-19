@@ -48,7 +48,7 @@ Skip this step if `models/house_price_model.pkl` already exists.
 python src/train_model.py
 ```
 
-This trains the Linear Regression model on `data/Housing.csv`, logs the experiment to MLflow, and saves the model to `models/house_price_model.pkl`.
+This runs several Linear Regression experiments on `data/Housing.csv`, logs them to MLflow, and saves the best-performing model to `models/house_price_model.pkl`.
 
 ### Step 2 - Start the Flask API
 
@@ -126,16 +126,18 @@ Response:
 ## Model Training Details
 
 - Algorithm: Linear Regression
-- Preprocessing: median imputation for numerics, most-frequent imputation plus one-hot encoding for categoricals
+- Experiment strategy: compare baseline Linear Regression, interaction features, log-transformed target, and degree-2 polynomial numeric features
+- Selected final pipeline: Linear Regression with pairwise interaction features on numeric columns
+- Preprocessing: median imputation plus pairwise interaction features for numerics, most-frequent imputation plus one-hot encoding for categoricals
 - Train/test split: 80/20 with `random_state=42`
 
 ### Metrics
 
 | Metric | Value |
 |--------|-------|
-| MAE    | 970,043 |
-| RMSE   | 1,324,507 |
-| R2     | 0.653 |
+| MAE    | 960,206 |
+| RMSE   | 1,300,236 |
+| R2     | 0.666 |
 
 ### View MLflow Experiments
 
