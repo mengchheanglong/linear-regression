@@ -24,6 +24,7 @@ CV_FOLDS = 5
 
 
 def build_model(numeric_features, categorical_features, numeric_strategy):
+    # Clean missing values in numeric columns using median imputation.
     numeric_steps = [("imputer", SimpleImputer(strategy="median"))]
 
     if numeric_strategy == "interactions":
@@ -42,6 +43,9 @@ def build_model(numeric_features, categorical_features, numeric_strategy):
         )
 
     numeric_transformer = Pipeline(steps=numeric_steps)
+
+    # Encode categorical features after filling missing values with the
+    # most frequent category.
     categorical_transformer = Pipeline(
         steps=[
             ("imputer", SimpleImputer(strategy="most_frequent")),
@@ -103,6 +107,9 @@ def build_candidates(numeric_features, categorical_features):
 
 def evaluate_candidate(candidate, X_train, X_test, y_train, y_test):
     model = candidate["model"]
+
+    # Compare multiple experiment variants using 5-fold cross-validation
+    # before checking their test-set performance.
     cv = KFold(n_splits=CV_FOLDS, shuffle=True, random_state=RANDOM_STATE)
     cv_scores = cross_validate(
         model,
@@ -118,16 +125,24 @@ def evaluate_candidate(candidate, X_train, X_test, y_train, y_test):
     )
 
     model.fit(X_train, y_train)
-    y_pred = model.predict(X_test)
+    y_pred_test = model.predict(X_test)
+    y_pred_train = model.predict(X_train)
 
-    mae = mean_absolute_error(y_test, y_pred)
-    rmse = float(np.sqrt(mean_squared_error(y_test, y_pred)))
-    r2 = r2_score(y_test, y_pred)
+    mae_test = mean_absolute_error(y_test, y_pred_test)
+    rmse_test = float(np.sqrt(mean_squared_error(y_test, y_pred_test)))
+    r2_test = r2_score(y_test, y_pred_test)
+    
+    mae_train = mean_absolute_error(y_train, y_pred_train)
+    rmse_train = float(np.sqrt(mean_squared_error(y_train, y_pred_train)))
+    r2_train = r2_score(y_train, y_pred_train)
 
     return {
-        "mae": mae,
-        "rmse": rmse,
-        "r2": r2,
+        "mae": mae_test,
+        "rmse": rmse_test,
+        "r2": r2_test,
+        "mae_train": mae_train,
+        "rmse_train": rmse_train,
+        "r2_train": r2_train,
         "cv_mae": float(-cv_scores["test_mae"].mean()),
         "cv_rmse": float(-cv_scores["test_rmse"].mean()),
         "cv_r2": float(cv_scores["test_r2"].mean()),
@@ -135,6 +150,7 @@ def evaluate_candidate(candidate, X_train, X_test, y_train, y_test):
 
 
 def main():
+    # 1. Load dataset
     df = pd.read_csv(DATA_PATH)
 
     print("Dataset loaded successfully.")
@@ -147,15 +163,19 @@ def main():
             f"Available columns are: {df.columns.tolist()}"
         )
 
+    # Separate the input features from the target price column.
     X = df.drop(columns=[TARGET_COLUMN])
     y = df[TARGET_COLUMN]
 
+    # Identify numeric and categorical columns so they can be preprocessed
+    # correctly inside the model pipeline.
     numeric_features = X.select_dtypes(include=["int64", "float64"]).columns.tolist()
     categorical_features = X.select_dtypes(include=["object", "category"]).columns.tolist()
 
     print("Numeric columns:", numeric_features)
     print("Categorical columns:", categorical_features)
 
+    # 4. Split train/test: 80/20
     X_train, X_test, y_train, y_test = train_test_split(
         X,
         y,
@@ -168,6 +188,7 @@ def main():
 
     mlflow.set_experiment(EXPERIMENT_NAME)
 
+    # 5. Train Linear Regression and compare multiple experiment variants.
     candidates = build_candidates(numeric_features, categorical_features)
     best_result = None
 
@@ -198,11 +219,9 @@ def main():
 
             print(
                 f"{candidate['name']}: "
-                f"MAE={metrics['mae']:.2f}, "
-                f"RMSE={metrics['rmse']:.2f}, "
-                f"R2={metrics['r2']:.4f}, "
-                f"CV_MAE={metrics['cv_mae']:.2f}, "
-                f"CV_RMSE={metrics['cv_rmse']:.2f}, "
+                f"Train R2={metrics['r2_train']:.4f}, Test R2={metrics['r2']:.4f} | "
+                f"Train MAE={metrics['mae_train']:.2f}, Test MAE={metrics['mae']:.2f} | "
+                f"Train RMSE={metrics['rmse_train']:.2f}, Test RMSE={metrics['rmse']:.2f} | "
                 f"CV_R2={metrics['cv_r2']:.4f}"
             )
 
@@ -227,6 +246,7 @@ def main():
     print("CV RMSE:", best_metrics["cv_rmse"])
     print("CV R2 Score:", best_metrics["cv_r2"])
 
+    # 6. Save best model after refitting it on the full dataset.
     best_model.fit(X, y)
     os.makedirs("models", exist_ok=True)
     joblib.dump(best_model, MODEL_PATH)
